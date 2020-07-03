@@ -264,6 +264,8 @@ void sdf::draw_everything()
 	ImGui::Begin("Controls", NULL, 0);
 
     //do the other widgets	
+   HelpMarker("shut up, compiler");
+    
 
 	ImGui::End();
 	ImGui::Render();
