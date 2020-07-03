@@ -1,7 +1,7 @@
 #include "rtiow.h"
 // This contains the lower level code
 
-void sdf::create_window()
+void rtiow::create_window()
 {
 	if(SDL_Init( SDL_INIT_EVERYTHING ) != 0)
 	{
@@ -52,15 +52,6 @@ void sdf::create_window()
 	SDL_GL_SetSwapInterval(1); // Enable vsync
 	// SDL_GL_SetSwapInterval(0); // explicitly disable vsync
 
-    // CONTINUUM REPRESENTATION POINTS
-
-
-
-
-
-
-
-
 
 	if (glewInit() != GLEW_OK)
 	{
@@ -68,7 +59,7 @@ void sdf::create_window()
 	}
 
 	glEnable(GL_DEPTH_TEST);
-    glEnable(GL_POINT_SMOOTH);
+    /* glEnable(GL_POINT_SMOOTH); */
 
     glPointSize(3.0);
 	glEnable(GL_BLEND);
@@ -144,9 +135,16 @@ void sdf::create_window()
 	colors[ImGuiCol_NavWindowingHighlight]  = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 	colors[ImGuiCol_NavWindowingDimBg]      = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 	colors[ImGuiCol_ModalWindowDimBg]       = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+
+
+
+    // use the define
+    num_samples = NUM_SAMPLES;
+    sample_count = 0;
+    total_time = 0;
 }
 
-void sdf::gl_setup()
+void rtiow::gl_setup()
 {
 	// some info on your current platform
 	const GLubyte *renderer = glGetString( GL_RENDERER ); // get renderer string
@@ -208,7 +206,7 @@ void sdf::gl_setup()
 
     // create the image textures
     
-    // compile the compute shader to do the raycasting
+    // compile the compute shader to do the raytracing
     
     // ...
 
@@ -230,7 +228,7 @@ static void HelpMarker(const char* desc)
 	}
 }
 
-void sdf::draw_everything()
+void rtiow::do_a_sample()
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io; // void cast prevents unused variable warning
     //get the screen dimensions and pass in as uniforms
@@ -239,9 +237,32 @@ void sdf::draw_everything()
 	glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);   // from hsv picker
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                     // clear the background
 
-	// draw the stuff on the GPU
 
-    // continuum
+    // start a timer
+    auto start = std::chrono::high_resolution_clock::now();
+   
+
+    // do a sample for all the pixels - this takes time
+    usleep(15000);
+
+    
+    // increment the sample count
+    sample_count++;
+
+
+    // stop that timer, add its value to the total time
+    auto end = std::chrono::high_resolution_clock::now();
+    int time_in_milliseconds = (int)std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(end - start).count();
+    total_time += time_in_milliseconds;
+
+
+    // average the values to prepare the data for the texture
+
+
+    // buffer it to the GPU
+    
+
+    // display this texture
     glUseProgram(display_shader);
     glBindVertexArray( display_vao );
     glBindBuffer( GL_ARRAY_BUFFER, display_vbo );
@@ -255,17 +276,26 @@ void sdf::draw_everything()
 	ImGui::NewFrame();
 
 	// show the demo window
-	// static bool show_demo_window = true;
-	// if (show_demo_window) ImGui::ShowDemoWindow(&show_demo_window);
+	 /* static bool show_demo_window = true; */
+	 /* if (show_demo_window) ImGui::ShowDemoWindow(&show_demo_window); */
 
 	// do my own window
 	ImGui::SetNextWindowPos(ImVec2(10,10));
-	ImGui::SetNextWindowSize(ImVec2(256,385));
+	ImGui::SetNextWindowSize(ImVec2(256,200));
 	ImGui::Begin("Controls", NULL, 0);
 
-    //do the other widgets	
-   HelpMarker("shut up, compiler");
     
+    ImGui::Text("How many samples do you want?");
+
+    ImGui::InputInt(" ", &num_samples);
+    ImGui::SameLine(); HelpMarker("You can apply arithmetic operators +,*,/ on numerical values.\n  e.g. [ 100 ], input \'*2\', result becomes [ 200 ]\nUse +- to subtract.\n");
+    ImGui::Text("%i samples have been completed", sample_count);
+
+    ImGui::Text(" ");
+    ImGui::Text(" ");
+    ImGui::Text("Previous sample took: %*i ms", 9, time_in_milliseconds);
+    ImGui::Text("Total elapsed:       %*li ms", 10, total_time);
+
 
 	ImGui::End();
 	ImGui::Render();
@@ -293,7 +323,7 @@ void sdf::draw_everything()
 }
 
 
-void sdf::quit()
+void rtiow::quit()
 {
   //shutdown everything
   ImGui_ImplOpenGL3_Shutdown();

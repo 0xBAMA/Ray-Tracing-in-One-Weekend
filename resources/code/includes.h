@@ -19,6 +19,9 @@
 #include <cstdint>
 #include <cstdlib>
 //#include <filesystem>
+#include <unistd.h>
+
+
 
 //iostream aliases
 using std::cin;
@@ -66,6 +69,12 @@ using std::endl;
 
 //diamond square heightmap generation
 #include "diamond_square.h"
+
+
+
+#define NUM_SAMPLES 1024
+
+
 
 
 #endif

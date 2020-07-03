@@ -2,7 +2,7 @@
 #include "debug.h"
 // This contains the very high level expression of what's going on
 
-sdf::sdf()
+rtiow::rtiow()
 {
     pquit = false;
 
@@ -12,11 +12,11 @@ sdf::sdf()
 
     while(!pquit)
     {
-        draw_everything();
+        do_a_sample();
     }
 }
 
-sdf::~sdf()
+rtiow::~rtiow()
 {
     quit();
 }

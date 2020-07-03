@@ -19,6 +19,6 @@
 
 int main(int argc, char *argv[])
 {
-    sdf s;
+    rtiow s;
     return 0;
 }

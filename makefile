@@ -9,7 +9,7 @@ msg:
 		@date
 		@echo
 
-exe: resources/imgui/imgui.o resources/code/lodepng.o resources/code/perlin.o rtiow.o utils.o
+exe: resources/imgui/imgui.o resources/code/lodepng.o resources/code/perlin.o rtiow.o utils.o 
 		g++ -o exe resources/code/main.cc *.o resources/imgui/*.o resources/code/*.o       ${FLAGS}
 
 resources/imgui/imgui.o: resources/imgui/*.cc
@@ -23,19 +23,19 @@ resources/imgui/imgui.o: resources/imgui/*.cc
 
 
 utils.o: resources/code/rtiow.h resources/code/rtiow_utils.cc
-		g++ -c -o utils.o resources/code/rtiow_utils.cc               ${FLAGS}
+		g++ -c -o utils.o resources/code/rtiow_utils.cc               				    ${FLAGS}
 
 rtiow.o: resources/code/rtiow.h resources/code/rtiow.cc
-		g++ -c -o rtiow.o resources/code/rtiow.cc                  ${FLAGS}
-
-resources/code/debug.o: resources/code/debug.cc
-		g++ -c -o resources/code/debug.o resources/code/debug.cc                        ${FLAGS}
+		g++ -c -o rtiow.o resources/code/rtiow.cc                  		                ${FLAGS}
 
 resources/code/lodepng.o: resources/code/lodepng.h resources/code/lodepng.cc
 		g++ -c -o resources/code/lodepng.o resources/code/lodepng.cc                    ${FLAGS}
 
 resources/code/perlin.o: resources/code/perlin.h resources/code/perlin.cc
 		g++ -c -o resources/code/perlin.o resources/code/perlin.cc                      ${FLAGS}
+
+clean_all:
+	rm resources/imgui/*.o resources/code/lodepng.o resources/code/perlin.o *.o
 
 
 clean:

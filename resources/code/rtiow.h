@@ -3,12 +3,12 @@
 
 #include "includes.h"
 
-class sdf
+class rtiow
 {
 public:
 
-	sdf();
-	~sdf();
+	rtiow();
+	~rtiow();
 	
 private:
 
@@ -22,9 +22,13 @@ private:
     GLuint display_vbo;
 
 
+    int num_samples;
+    int sample_count;
+    long int total_time;
+
 	void create_window();
 	void gl_setup();
-	void draw_everything();
+	void do_a_sample();
 	
 	void quit();
 	
