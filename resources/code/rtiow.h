@@ -21,6 +21,7 @@ private:
     GLuint display_vao;
     GLuint display_vbo;
 
+    std::vector<std::vector<std::vector<glm::vec3>>> model; // reference with model[x][y][sample]
 
     int num_samples;
     int sample_count;

@@ -73,7 +73,8 @@ using std::endl;
 
 
 #define NUM_SAMPLES 1024
-
+#define HEIGHT 512
+#define WIDTH 1024
 
 
 

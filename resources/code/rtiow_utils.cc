@@ -138,10 +138,24 @@ void rtiow::create_window()
 
 
 
-    // use the define
+    // use the defines
     num_samples = NUM_SAMPLES;
+
+    // initialize timer, sample count
     sample_count = 0;
     total_time = 0;
+
+    // initialize the image model
+    model.resize(WIDTH);
+
+    for(auto & x : model)
+    {
+        x.resize(HEIGHT);
+        for(auto & y : x)
+        {
+            y.resize(0); // no samples initially
+        }
+    }
 }
 
 void rtiow::gl_setup()
@@ -243,6 +257,7 @@ void rtiow::do_a_sample()
    
 
     // do a sample for all the pixels - this takes time
+    // sleep is just here as a dummy payload
     usleep(15000);
 
     
@@ -256,7 +271,14 @@ void rtiow::do_a_sample()
     total_time += time_in_milliseconds;
 
 
-    // average the values to prepare the data for the texture
+    // these hold the running average values, the data for the texture
+    std::vector<float> tex_data;
+
+    tex_data.resize(WIDTH*HEIGHT*3); // R, G, B for width*height pixels
+
+    
+    // iterate through the samples per pixel and compute the average color
+
 
 
     // buffer it to the GPU
@@ -334,6 +356,8 @@ void rtiow::quit()
   SDL_GL_DeleteContext(GLcontext);
   SDL_DestroyWindow(window);
   SDL_Quit();
-  
+
+  //average the samples and create your output using LodePNG
+
   cout << "goodbye." << endl;
 }
