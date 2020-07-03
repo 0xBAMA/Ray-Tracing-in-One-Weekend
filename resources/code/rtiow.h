@@ -23,6 +23,12 @@ private:
 
     std::vector<std::vector<std::vector<glm::vec3>>> model; // reference with model[x][y][sample]
 
+    // sphere locations
+
+    // sphere radii
+    
+    // sphere materials
+
     int num_samples;
     int sample_count;
     long int total_time;

@@ -257,8 +257,27 @@ void rtiow::do_a_sample()
    
 
     // do a sample for all the pixels - this takes time
-    // sleep is just here as a dummy payload
-    usleep(15000);
+    for(auto & x : model)
+    {
+        for(auto & y : x)
+        {
+            int x_coord = &x - &model[0];
+            int y_coord = &y - &x[0];
+
+            float x_fl = -1 + ((1.0-(-1.0))/(WIDTH-1))*(x_coord); 
+            float y_fl = -1 + ((1.0-(-1.0))/(HEIGHT-1))*(y_coord); 
+
+            /* cout << " x " << x_coord << " y " << y_coord << " is xfl " << x_fl << " yfl " << y_fl << endl; */
+
+            glm::dvec3 sample = glm::dvec3(0,0,0);
+
+
+            // test the ray against the spheres
+
+
+            y.push_back(glm::vec3((float)sample.x, (float)sample.y, (float)sample.z));
+        }
+    }
 
     
     // increment the sample count
@@ -271,18 +290,40 @@ void rtiow::do_a_sample()
     total_time += time_in_milliseconds;
 
 
+    // start a new timer, to see how long it took to send the data to the GPU
+    start = std::chrono::high_resolution_clock::now();
+
+
     // these hold the running average values, the data for the texture
     std::vector<float> tex_data;
-
+    tex_data.resize(0);             //zero it out
     tex_data.resize(WIDTH*HEIGHT*3); // R, G, B for width*height pixels
 
     
     // iterate through the samples per pixel and compute the average color
+    for(auto x : model)         // iterating through x
+    {   for(auto y : x)         // iterating through y
+        {   glm::vec3 sum = glm::vec3(0,0,0);
+            for(auto s : y)     // samples
+            {
+                // add up the samples
+                sum += s;
+            }
 
+            //average it out, store it 
+            tex_data.push_back(sum.x / (float)sample_count);
+            tex_data.push_back(sum.y / (float)sample_count);
+            tex_data.push_back(sum.z / (float)sample_count);
+        }
+    }
 
-
-    // buffer it to the GPU
+    // buffer the data to the GPU
     
+
+    // stop the timer
+    end = std::chrono::high_resolution_clock::now();
+    int time_buffering = (int)std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(end - start).count();
+    total_time += time_buffering;
 
     // display this texture
     glUseProgram(display_shader);
@@ -316,6 +357,7 @@ void rtiow::do_a_sample()
     ImGui::Text(" ");
     ImGui::Text(" ");
     ImGui::Text("Previous sample took: %*i ms", 9, time_in_milliseconds);
+    ImGui::Text("GPU buffering took:   %*i ms", 9, time_buffering);
     ImGui::Text("Total elapsed:       %*li ms", 10, total_time);
 
 
