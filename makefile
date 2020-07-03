@@ -1,7 +1,7 @@
 FLAGS =  -Wall -O3 -std=c++17 -lGLEW -lGL -lstdc++fs $(shell pkg-config sdl2 --cflags --libs)
 IMGUI_FLAGS   =  -Wall -lGLEW -DIMGUI_IMPL_OPENGL_LOADER_GLEW `sdl2-config --cflags`
 
-all: msg main clean run
+all: msg exe clean run
 
 msg:
 		@echo
@@ -9,8 +9,8 @@ msg:
 		@date
 		@echo
 
-main: resources/imgui/imgui.o resources/code/lodepng.o resources/code/perlin.o rtiow.o utils.o
-		g++ -o main resources/code/main.cc *.o resources/imgui/*.o resources/code/*.o       ${FLAGS}
+exe: resources/imgui/imgui.o resources/code/lodepng.o resources/code/perlin.o rtiow.o utils.o
+		g++ -o exe resources/code/main.cc *.o resources/imgui/*.o resources/code/*.o       ${FLAGS}
 
 resources/imgui/imgui.o: resources/imgui/*.cc
 		g++ -c -o resources/imgui/imgui_impl_sdl.o resources/imgui/imgui_impl_sdl.cc         ${IMGUI_FLAGS}
@@ -45,8 +45,8 @@ clean:
 		@echo
 		@rm *.o
 		@echo 'executable size:'
-		@stat --printf "%s bytes\n" main
+		@stat --printf "%s bytes\n" exe
 		@echo
 
 run:
-		@./main
+		@./exe
