@@ -3,6 +3,64 @@
 
 #include "includes.h"
 
+struct hit_record
+{
+    glm::dvec3 point;
+    glm::dvec3 normal;
+
+    bool front_face;
+
+    inline void set_face_normal(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, const glm::dvec3& outward_normal)
+    {
+        front_face = glm::dot(ray_dir, outward_normal) < 0;
+        normal = front_face ? outward_normal : -outward_normal;
+    }
+
+    double t;
+};
+
+// -----------------
+
+class hittable
+{
+public:
+    virtual bool hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_min, double t_max, hit_record& rec) const = 0;
+};
+
+// -----------------
+
+class sphere: public hittable
+{
+public:
+    sphere(){};
+    sphere(glm::dvec3 center, double rad) : center_point(center), radius(rad) {};
+
+    virtual bool hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_min, double t_max, hit_record& rec) const;
+
+public:
+    glm::dvec3 center_point;
+    double radius;
+};
+
+// -----------------
+
+class hittable_list: public hittable
+{
+public:
+    hittable_list(){};
+    hittable_list(std::shared_ptr<hittable> object){add(object);}
+
+    void clear(){objects.clear();}
+    void add(std::shared_ptr<hittable> object){objects.push_back(object);}
+
+    virtual bool hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_min, double t_max, hit_record& rec) const;
+
+public:
+    std::vector<std::shared_ptr<hittable>> objects;
+};
+
+// -----------------
+
 class rtiow
 {
 public:
@@ -23,11 +81,7 @@ private:
 
     std::vector<std::vector<std::vector<glm::vec3>>> model; // reference with model[x][y][sample]
 
-    // sphere locations
-
-    // sphere radii
-    
-    // sphere materials
+    hittable_list world;
 
     int num_samples;
     int sample_count;

@@ -388,6 +388,7 @@ void rtiow::do_a_sample()
 }
 
 
+
 void rtiow::quit()
 {
   //shutdown everything
@@ -403,4 +404,49 @@ void rtiow::quit()
   //average the samples and create your output using LodePNG
 
   cout << "goodbye." << endl;
+}
+
+
+
+bool sphere::hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_min, double t_max, hit_record& rec) const
+{
+    glm::dvec3 oc = ray_org - center_point;
+    auto a = pow(glm::length(ray_dir), 2);
+    auto half_b = glm::dot(oc, ray_dir);
+    auto c = pow(glm::length(oc), 2) - radius*radius; 
+    auto discriminant = half_b*half_b - a*c;
+
+    if(discriminant > 0)
+    {
+        auto root = std::sqrt(discriminant);
+        auto temp = (-half_b - root)/a;
+        if(temp < t_max && temp > t_min)
+        {
+            rec.t = temp;
+            rec.point = ray_org + rec.t * ray_dir;
+            rec.normal = (rec.point - center_point) / radius;
+            glm::dvec3 outward_normal = (rec.point - center_point) / radius;
+            rec.set_face_normal(ray_org, ray_dir, outward_normal);
+
+            return true;
+        }
+        temp = (-half_b + root) / a;
+        if(temp < t_max && temp > t_min)
+        {
+            rec.t = temp;
+            rec.point = ray_org + rec.t * ray_dir;
+            rec.normal = (rec.point - center_point) / radius;
+            glm::dvec3 outward_normal = (rec.point - center_point) / radius;
+            rec.set_face_normal(ray_org, ray_dir, outward_normal);
+
+            return true;
+        }
+    }
+    return false;
+}
+
+
+bool hittable_list::hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_min, double t_max, hit_record& rec) const
+{
+
 }
