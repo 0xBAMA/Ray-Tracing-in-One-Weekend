@@ -262,19 +262,19 @@ void rtiow::do_a_sample()
         for(auto & y : x)
         {
             int x_coord = &x - &model[0];
-            int y_coord = &y - &x[0];
-
             float x_fl = -1 + ((1.0-(-1.0))/(WIDTH-1))*(x_coord); 
+            
+            int y_coord = &y - &x[0];
             float y_fl = -1 + ((1.0-(-1.0))/(HEIGHT-1))*(y_coord); 
 
             /* cout << " x " << x_coord << " y " << y_coord << " is xfl " << x_fl << " yfl " << y_fl << endl; */
 
             glm::dvec3 sample = glm::dvec3(0,0,0);
 
-
             // test the ray against the spheres
-
-
+            // figure out the color, put it in 'sample'
+            
+            // push it onto the vector of samples for this pixel
             y.push_back(glm::vec3((float)sample.x, (float)sample.y, (float)sample.z));
         }
     }
@@ -317,8 +317,9 @@ void rtiow::do_a_sample()
         }
     }
 
-    // buffer the data to the GPU
+    // buffer the averaged data to the GPU
     
+
 
     // stop the timer
     end = std::chrono::high_resolution_clock::now();
@@ -344,7 +345,7 @@ void rtiow::do_a_sample()
 
 	// do my own window
 	ImGui::SetNextWindowPos(ImVec2(10,10));
-	ImGui::SetNextWindowSize(ImVec2(256,200));
+	ImGui::SetNextWindowSize(ImVec2(300,200));
 	ImGui::Begin("Controls", NULL, 0);
 
     
@@ -356,9 +357,9 @@ void rtiow::do_a_sample()
 
     ImGui::Text(" ");
     ImGui::Text(" ");
-    ImGui::Text("Previous sample took: %*i ms", 9, time_in_milliseconds);
-    ImGui::Text("GPU buffering took:   %*i ms", 9, time_buffering);
-    ImGui::Text("Total elapsed:       %*li ms", 10, total_time);
+    ImGui::Text("Previous sample took:        %*i ms", 9, time_in_milliseconds);
+    ImGui::Text("Averaging/GPU buffering took:%*i ms", 9, time_buffering);
+    ImGui::Text("Total elapsed:              %*li ms", 10, total_time);
 
 
 	ImGui::End();
