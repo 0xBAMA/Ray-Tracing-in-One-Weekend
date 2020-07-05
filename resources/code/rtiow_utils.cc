@@ -262,10 +262,14 @@ void rtiow::do_a_sample()
         for(auto & y : x)
         {
             int x_coord = &x - &model[0];
-            float x_fl = -1 + ((1.0-(-1.0))/(WIDTH-1))*(x_coord); 
-            
             int y_coord = &y - &x[0];
+            
             float y_fl = -1 + ((1.0-(-1.0))/(HEIGHT-1))*(y_coord); 
+            float x_fl = -1 + ((1.0-(-1.0))/(WIDTH-1))*(x_coord); 
+
+            // fixes compiler warnings
+            (void)x_fl;
+            (void)y_fl;
 
             /* cout << " x " << x_coord << " y " << y_coord << " is xfl " << x_fl << " yfl " << y_fl << endl; */
 
@@ -448,5 +452,20 @@ bool sphere::hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_
 
 bool hittable_list::hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_min, double t_max, hit_record& rec) const
 {
+    hit_record temp_rec;
+    bool hit_anything = false;
+    auto closest_so_far = t_max;
 
+    for(const auto& object : objects)
+    {
+        if(object->hit(ray_org, ray_dir, t_min, closest_so_far, temp_rec))
+        {
+            hit_anything = true;
+            closest_so_far = temp_rec.t;
+            rec = temp_rec;
+        }
+    }
+
+    return hit_anything;
 }
+

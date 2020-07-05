@@ -14,6 +14,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <limits>
 #include <memory>
 #include <deque>
 #include <chrono>
