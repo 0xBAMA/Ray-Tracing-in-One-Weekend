@@ -219,7 +219,18 @@ void rtiow::gl_setup()
 
 
     // create the image textures
-    
+    glGenTextures(1, &display_texture);
+    glActiveTexture(GL_TEXTURE0+1);  
+    glBindTexture(GL_TEXTURE_2D, display_texture);
+
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
+
+
+
+
     // compile the compute shader to do the raytracing
     
     // ...
@@ -279,7 +290,7 @@ void rtiow::do_a_sample()
             // figure out the color, put it in 'sample'
             
             // push it onto the vector of samples for this pixel
-            y.push_back(glm::vec3((float)sample.x, (float)sample.y, (float)sample.z));
+            y.push_back(sample);
         }
     }
 
@@ -298,32 +309,44 @@ void rtiow::do_a_sample()
     start = std::chrono::high_resolution_clock::now();
 
 
-    // these hold the running average values, the data for the texture
-    std::vector<float> tex_data;
-    tex_data.resize(0);             //zero it out
-    tex_data.resize(WIDTH*HEIGHT*3); // R, G, B for width*height pixels
 
+    if(send_tex)
+    {
+        // these hold the running average values, the data for the texture
+        std::vector<unsigned char> tex_data;
+        tex_data.resize(0);             //zero it out
+
+            long unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+            std::default_random_engine engine{seed};
+            std::uniform_real_distribution<double> distribution{0, 1};
     
-    // iterate through the samples per pixel and compute the average color
-    for(auto x : model)         // iterating through x
-    {   for(auto y : x)         // iterating through y
-        {   glm::vec3 sum = glm::vec3(0,0,0);
-            for(auto s : y)     // samples
-            {
-                // add up the samples
-                sum += s;
+        // iterate through the samples per pixel and compute the average color
+        for(auto x : model)         // iterating through x
+        {   for(auto y : x)         // iterating through y
+            {   glm::dvec3 sum = glm::dvec3(0,0,0);
+                for(auto samp : y)     // samples
+                {
+                    // add up the samples
+                    sum += samp;
+                }
+
+                //average it out, store it 
+                tex_data.push_back(static_cast<unsigned char>(255 * (sum.x / (double)sample_count)));
+                tex_data.push_back(static_cast<unsigned char>(255 * (sum.y / (double)sample_count)));
+                tex_data.push_back(255*distribution(engine));
+                tex_data.push_back(255);
             }
-
-            //average it out, store it 
-            tex_data.push_back(sum.x / (float)sample_count);
-            tex_data.push_back(sum.y / (float)sample_count);
-            tex_data.push_back(sum.z / (float)sample_count);
         }
-    }
 
-    // buffer the averaged data to the GPU
+        // buffer the averaged data to the GPU
+        // glTexImage2D(...);
     
 
+        glBindTexture(GL_TEXTURE_2D, display_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, &tex_data[0]);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
 
     // stop the timer
     end = std::chrono::high_resolution_clock::now();
@@ -360,6 +383,8 @@ void rtiow::do_a_sample()
     ImGui::Text("%i samples have been completed", sample_count);
 
     ImGui::Text(" ");
+    ImGui::Checkbox("Send to GPU each sample: ", &send_tex);
+    
     ImGui::Text(" ");
     ImGui::Text("Previous sample took:        %*i ms", 9, time_in_milliseconds);
     ImGui::Text("Averaging/GPU buffering took:%*i ms", 9, time_buffering);
@@ -432,6 +457,8 @@ bool sphere::hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_
             glm::dvec3 outward_normal = (rec.point - center_point) / radius;
             rec.set_face_normal(ray_org, ray_dir, outward_normal);
 
+            rec.mat_ptr = mat_ptr;
+
             return true;
         }
         temp = (-half_b + root) / a;
@@ -442,6 +469,8 @@ bool sphere::hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_
             rec.normal = (rec.point - center_point) / radius;
             glm::dvec3 outward_normal = (rec.point - center_point) / radius;
             rec.set_face_normal(ray_org, ray_dir, outward_normal);
+            
+            rec.mat_ptr = mat_ptr;
 
             return true;
         }

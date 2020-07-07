@@ -23,16 +23,16 @@ resources/imgui/imgui.o: resources/imgui/*.cc
 
 
 utils.o: resources/code/rtiow.h resources/code/rtiow_utils.cc
-		g++ -c -o utils.o resources/code/rtiow_utils.cc               				    ${FLAGS}
+		g++ -c -o utils.o resources/code/rtiow_utils.cc               ${FLAGS}
 
 rtiow.o: resources/code/rtiow.h resources/code/rtiow.cc
-		g++ -c -o rtiow.o resources/code/rtiow.cc                  		                ${FLAGS}
+		g++ -c -o rtiow.o resources/code/rtiow.cc                     ${FLAGS}
 
 resources/code/lodepng.o: resources/code/lodepng.h resources/code/lodepng.cc
-		g++ -c -o resources/code/lodepng.o resources/code/lodepng.cc                    ${FLAGS}
+		g++ -c -o resources/code/lodepng.o resources/code/lodepng.cc  ${FLAGS}
 
 resources/code/perlin.o: resources/code/perlin.h resources/code/perlin.cc
-		g++ -c -o resources/code/perlin.o resources/code/perlin.cc                      ${FLAGS}
+		g++ -c -o resources/code/perlin.o resources/code/perlin.cc    ${FLAGS}
 
 clean_all:
 	rm resources/imgui/*.o resources/code/lodepng.o resources/code/perlin.o *.o
