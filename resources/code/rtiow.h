@@ -70,7 +70,8 @@ class dielectric : public material {
 
         virtual bool scatter(
             const ray& r_in, const hit_record& rec, glm::dvec3& attenuation, ray& scattered
-        ) const {
+        ) const 
+        {
             attenuation = glm::dvec3(1.0, 1.0, 1.0);
             double etai_over_etat = (rec.front_face) ? (1.0 / ref_idx) : (ref_idx);
 
@@ -78,21 +79,26 @@ class dielectric : public material {
             double cos_theta = fmin(glm::dot(-unit_direction, rec.normal), 1.0);
             double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
             if (etai_over_etat * sin_theta > 1.0 ) {
-                vec3 reflected = reflect(unit_direction, rec.normal);
-                scattered = ray(rec.p, reflected);
+                glm::dvec3 reflected = reflect(unit_direction, rec.normal);
+                scattered = ray(rec.point, reflected);
                 return true;
             }
+            
+            long unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+            std::default_random_engine engine{seed};
+            std::uniform_real_distribution<double> distribution{0, 1};
 
             double reflect_prob = schlick(cos_theta, etai_over_etat);
-            if (random_double() < reflect_prob)
+            if (distribution(engine) < reflect_prob)
             {
-                vec3 reflected = reflect(unit_direction, rec.normal);
-                scattered = ray(rec.p, reflected);
+                glm::dvec3 reflected = reflect(unit_direction, rec.normal);
+                scattered = ray(rec.point, reflected);
                 return true;
             }
 
-            vec3 refracted = refract(unit_direction, rec.normal, etai_over_etat);
-            scattered = ray(rec.p, refracted);
+            glm::dvec3 refracted = refract(unit_direction, rec.normal, etai_over_etat);
+            scattered = ray(rec.point, refracted);
             return true;
         }
 
@@ -103,37 +109,64 @@ class dielectric : public material {
 
 class lambertian : public material {
     public:
-        lambertian(const color& a) : albedo(a) {}
+        lambertian(const glm::dvec3& a) : albedo(a) {}
 
         virtual bool scatter(
-            const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered
-        ) const  {
-            vec3 scatter_direction = rec.normal + random_unit_vector();
-            scattered = ray(rec.p, scatter_direction);
+            const ray& r_in, const hit_record& rec, glm::dvec3& attenuation, ray& scattered
+        ) const  
+        {
+            long unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+            std::default_random_engine engine{seed};
+            std::uniform_real_distribution<double> distribution{0, 6.28};
+            std::uniform_real_distribution<double> distribution2{-1, 1};
+           
+            double a = distribution(engine);
+            double z = distribution2(engine);
+            double r = sqrt(1 - z*z);
+            glm::dvec3 random_unit_vector = glm::dvec3(r*cos(a), r*sin(a), z);
+
+            glm::dvec3 scatter_direction = rec.normal + random_unit_vector;
+            scattered = ray(rec.point, scatter_direction);
             attenuation = albedo;
             return true;
         }
 
     public:
-        color albedo;
+        glm::dvec3 albedo;
 };
 
 
 class metal : public material {
     public:
-        metal(const color& a, double f) : albedo(a), fuzz(f < 1 ? f : 1) {}
+        metal(const glm::dvec3& a, double f) : albedo(a), fuzz(f < 1 ? f : 1) {}
 
         virtual bool scatter(
-            const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered
-        ) const  {
-            vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
-            scattered = ray(rec.p, reflected + fuzz*random_in_unit_sphere());
+            const ray& r_in, const hit_record& rec, glm::dvec3& attenuation, ray& scattered
+        ) const  
+        {
+            // generate random in unit sphere
+            glm::dvec3 random_in_unit_sphere;
+            
+            long unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+            std::default_random_engine engine{seed};
+            std::uniform_real_distribution<double> distribution{-1, 1};
+
+            while(true)
+            {
+                random_in_unit_sphere = glm::dvec3(distribution(engine), distribution(engine), distribution(engine)); 
+                if(pow(glm::length(random_in_unit_sphere), 2) >= 1.0) continue; 
+            }
+
+            glm::dvec3 reflected = reflect(glm::normalize(r_in.direction), rec.normal);
+            scattered = ray(rec.point, reflected + fuzz*random_in_unit_sphere);
             attenuation = albedo;
-            return (dot(scattered.direction(), rec.normal) > 0);
+            return (dot(scattered.direction, rec.normal) > 0);
         }
 
     public:
-        color albedo;
+        glm::dvec3 albedo;
         double fuzz;
 };
 
