@@ -334,8 +334,8 @@ void rtiow::do_a_sample()
                 //average it out, store it 
                 tex_data.push_back(static_cast<unsigned char>(255 * (sum.x / (double)sample_count)));
                 tex_data.push_back(static_cast<unsigned char>(255 * (sum.y / (double)sample_count)));
+                tex_data.push_back(static_cast<unsigned char>(255 * (sum.z / (double)sample_count)));
                 tex_data.push_back(255*distribution(engine));
-                tex_data.push_back(255);
             }
         }
 
