@@ -27,12 +27,6 @@ public:
     double time;
 };
 
-double schlick(double cosine, double ref_idx) 
-{
-    auto r0 = (1-ref_idx) / (1+ref_idx);
-    r0 = r0*r0;
-    return r0 + (1-r0)*pow((1 - cosine),5);
-}
 
 // -----------------
 class material; // forward declaration
@@ -62,7 +56,13 @@ class material
         virtual bool scatter(
             const ray& r_in, const hit_record& rec, glm::dvec3& attenuation, ray& scattered
         ) const = 0;
+
+
 };
+
+// -----------------
+
+double schlick(double cosine, double ref_idx);
 
 // -----------------
 
@@ -70,7 +70,7 @@ class dielectric : public material
 {
     public:
         dielectric(double ri) : ref_idx(ri) {}
-
+    
         virtual bool scatter(
             const ray& r_in, const hit_record& rec, glm::dvec3& attenuation, ray& scattered
         ) const 
@@ -328,10 +328,16 @@ private:
 	bool pquit;
     bool send_tex = false;		
 
+
+    const int max_depth = 15;
+
     // rtiow objects
     
     hittable_list world;
     camera cam;
+
+
+    glm::dvec3 ray_color(const ray& r, const hittable& world, int depth);
 };
 
 #endif
