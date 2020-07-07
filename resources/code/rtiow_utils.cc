@@ -350,7 +350,6 @@ void rtiow::do_a_sample()
     // do a sample for all the pixels - this takes time
     for(auto & x : model)
     {
-        cout << "scanline finished" << endl;
         for(auto & y : x)
         {
             int x_coord = &x - &model[0];
@@ -358,6 +357,8 @@ void rtiow::do_a_sample()
             
             double x_fl = (static_cast<double>(x_coord) + distribution(engine))/(static_cast<double>(WIDTH-1)); 
             double y_fl = (static_cast<double>(y_coord) + distribution(engine))/(static_cast<double>(HEIGHT-1)); 
+
+            /* cout << endl << endl << " x " << x_coord << " y " << y_coord << " is xfl " << x_fl << " yfl " << y_fl << endl; */ 
 
             ray r = cam.get_ray(x_fl, y_fl);
 
@@ -393,10 +394,10 @@ void rtiow::do_a_sample()
         std::uniform_real_distribution<double> distribution{0, 1};
     
         // iterate through the samples per pixel and compute the average color
-        for(auto x : model)         // iterating through x
-        {   for(auto y : x)         // iterating through y
+        for(unsigned int y = 0; y < HEIGHT; y++)         // iterating through y
+        {   for(unsigned int x = 0; x < WIDTH; x++)         // iterating through x
             {   glm::dvec3 sum = glm::dvec3(0,0,0);
-                for(auto samp : y)     // samples
+                for(auto samp : model[x][y])     // samples
                 {
                     // add up the samples
                     sum += samp;
@@ -412,8 +413,6 @@ void rtiow::do_a_sample()
         }
 
         // buffer the averaged data to the GPU
-        // glTexImage2D(...);
-
         glBindTexture(GL_TEXTURE_2D, display_texture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, &tex_data[0]);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -484,7 +483,10 @@ void rtiow::do_a_sample()
 
 		if ((event.type == SDL_KEYUP  && event.key.keysym.sym == SDLK_ESCAPE) || (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_X1)) //x1 is browser back on the mouse
 			pquit = true;
-	}
+	
+        if((event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_SPACE))
+            send_tex = !send_tex;
+    }
 }
 
 
@@ -502,6 +504,45 @@ void rtiow::quit()
   SDL_Quit();
 
   //average the samples and create your output using LodePNG
+    std::vector<unsigned char> tex_data;
+    tex_data.resize(0);             //zero it out
+
+    long unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+    std::default_random_engine engine{seed};
+    std::uniform_real_distribution<double> distribution{0, 1};
+    
+    // iterate through the samples per pixel and compute the average color
+    for(unsigned int y = 1; y <= HEIGHT; y++)         // iterating through y
+    {   for(unsigned int x = 0; x < WIDTH; x++)         // iterating through x
+        {   glm::dvec3 sum = glm::dvec3(0,0,0);
+            for(auto samp : model[x][HEIGHT-y])     // samples
+            {
+               // add up the samples
+                sum += samp;
+            }
+
+            // average it out, store it 
+            tex_data.push_back(static_cast<unsigned char>(255 * (sum.x / (double)sample_count)));
+            tex_data.push_back(static_cast<unsigned char>(255 * (sum.y / (double)sample_count)));
+            tex_data.push_back(static_cast<unsigned char>(255 * (sum.z / (double)sample_count)));
+            /* tex_data.push_back(255*distribution(engine)); */
+            tex_data.push_back(255);
+        }
+    }
+
+
+    unsigned width, height;
+
+    width = WIDTH;
+    height = HEIGHT;
+
+    tex_data.resize(4*WIDTH*HEIGHT);
+    std::string filename = std::string("save.png");
+
+    unsigned error = lodepng::encode(filename.c_str(), tex_data, width, height);
+
+    if(error) std::cout << "decode error during save(\" "+ filename +" \") " << error << ": " << lodepng_error_text(error) << std::endl;
 
   cout << "goodbye." << endl;
 }
@@ -575,9 +616,12 @@ glm::dvec3 rtiow::ray_color(const ray& r, const hittable& world, int depth)
 
     // If we've exceeded the ray bounce limit, no more light is gathered.
     if (depth <= 0)
+    {
         return glm::dvec3(0,0,0);
+    }
 
-    if (world.hit(r, 0.001, infinity, rec)) {
+    if (world.hit(r, 0.001, std::numeric_limits<double>::infinity(), rec)) 
+    {
         ray scattered;
         glm::dvec3 attenuation;
         if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))

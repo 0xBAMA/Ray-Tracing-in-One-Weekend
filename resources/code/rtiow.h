@@ -158,13 +158,10 @@ class metal : public material
 
             std::default_random_engine engine{seed};
             std::uniform_real_distribution<double> distribution{-1, 1};
+            std::normal_distribution<GLfloat> ndistribution(0.0,0.3);            
 
-            while(true)
-            {
-                random_in_unit_sphere = glm::dvec3(distribution(engine), distribution(engine), distribution(engine)); 
-                if(pow(glm::length(random_in_unit_sphere), 2) >= 1.0) continue; 
-            }
-
+            random_in_unit_sphere = glm::dvec3(ndistribution(engine), ndistribution(engine), ndistribution(engine)); 
+            
             glm::dvec3 reflected = reflect(glm::normalize(r_in.direction), rec.normal);
             scattered = ray(rec.point, reflected + fuzz*random_in_unit_sphere);
             attenuation = albedo;
@@ -222,13 +219,10 @@ class camera
             std::default_random_engine engine{seed};
             std::uniform_real_distribution<double> distribution{-1, 1};
             std::uniform_real_distribution<double> distribution2{time0, time1};
+            std::normal_distribution<GLfloat> ndistribution(0.0,0.3);            
            
             glm::dvec3 p;
-            while(true)
-            {
-                p = glm::dvec3(distribution(engine), distribution(engine), 0.0);
-                if(pow(glm::length(p), 2) >= 1.0) continue;
-            }
+            p = glm::dvec3(ndistribution(engine), ndistribution(engine), 0.0);
 
             glm::dvec3 rd = lens_radius * p;
             glm::dvec3 offset = u * rd.x + v * rd.y;
@@ -326,7 +320,7 @@ private:
 	void quit();
 	
 	bool pquit;
-    bool send_tex = false;		
+    bool send_tex = true;	
 
 
     const int max_depth = 15;
