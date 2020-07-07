@@ -156,9 +156,34 @@ void rtiow::create_window()
             y.resize(0); // no samples initially
         }
     }
+
+
+    // create the camera
+    const auto aspect_ratio = 2.0;
+    const int image_width = WIDTH;
+    const int image_height = static_cast<int>(image_width / aspect_ratio);
+    const int samples_per_pixel = 50;
+    const int max_depth = 50;
+
+    glm::dvec3 lookfrom(13,2,3);
+    glm::dvec3 lookat(0,0,0);
+    glm::dvec3 vup(0,1,0);
+    auto dist_to_focus = 10.0;
+    auto aperture = 0.1;
+
+    cam = camera(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
+
+
+
+    // create the world
+
+
+
+
+
 }
 
-void rtiow::gl_setup()
+void rtiow::gl_setup() 
 {
 	// some info on your current platform
 	const GLubyte *renderer = glGetString( GL_RENDERER ); // get renderer string
@@ -174,12 +199,12 @@ void rtiow::gl_setup()
     // set up the points for the continuum
     //  A---------------B
     //  |          .    |
-    //  |       .       |
-    //  |    .          |
-    //  |               |
+    //  |       .       | 
+    //  |    .          | 
+    //  |               | 
     //  C---------------D
 
-    // diagonal runs from C to B
+    // diagonal runs from C to B 
     //  A is -1, 1
     //  B is  1, 1
     //  C is -1,-1
@@ -437,11 +462,11 @@ void rtiow::quit()
 
 
 
-bool sphere::hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_min, double t_max, hit_record& rec) const
+bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec) const
 {
-    glm::dvec3 oc = ray_org - center_point;
-    auto a = pow(glm::length(ray_dir), 2);
-    auto half_b = glm::dot(oc, ray_dir);
+    glm::dvec3 oc = r.origin - center_point;
+    auto a = pow(glm::length(r.direction), 2);
+    auto half_b = glm::dot(oc, r.direction);
     auto c = pow(glm::length(oc), 2) - radius*radius; 
     auto discriminant = half_b*half_b - a*c;
 
@@ -452,10 +477,10 @@ bool sphere::hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_
         if(temp < t_max && temp > t_min)
         {
             rec.t = temp;
-            rec.point = ray_org + rec.t * ray_dir;
+            rec.point = r.origin + rec.t * r.direction;
             rec.normal = (rec.point - center_point) / radius;
             glm::dvec3 outward_normal = (rec.point - center_point) / radius;
-            rec.set_face_normal(ray_org, ray_dir, outward_normal);
+            rec.set_face_normal(r, outward_normal);
 
             rec.mat_ptr = mat_ptr;
 
@@ -465,10 +490,10 @@ bool sphere::hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_
         if(temp < t_max && temp > t_min)
         {
             rec.t = temp;
-            rec.point = ray_org + rec.t * ray_dir;
+            rec.point = r.origin + rec.t * r.direction;
             rec.normal = (rec.point - center_point) / radius;
             glm::dvec3 outward_normal = (rec.point - center_point) / radius;
-            rec.set_face_normal(ray_org, ray_dir, outward_normal);
+            rec.set_face_normal(r, outward_normal);
             
             rec.mat_ptr = mat_ptr;
 
@@ -479,7 +504,7 @@ bool sphere::hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_
 }
 
 
-bool hittable_list::hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_min, double t_max, hit_record& rec) const
+bool hittable_list::hit(const ray& r, double t_min, double t_max, hit_record& rec) const
 {
     hit_record temp_rec;
     bool hit_anything = false;
@@ -487,7 +512,7 @@ bool hittable_list::hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, do
 
     for(const auto& object : objects)
     {
-        if(object->hit(ray_org, ray_dir, t_min, closest_so_far, temp_rec))
+        if(object->hit(r, t_min, closest_so_far, temp_rec))
         {
             hit_anything = true;
             closest_so_far = temp_rec.t;

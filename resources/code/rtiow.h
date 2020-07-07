@@ -27,7 +27,8 @@ public:
     double time;
 };
 
-double schlick(double cosine, double ref_idx) {
+double schlick(double cosine, double ref_idx) 
+{
     auto r0 = (1-ref_idx) / (1+ref_idx);
     r0 = r0*r0;
     return r0 + (1-r0)*pow((1 - cosine),5);
@@ -44,9 +45,9 @@ struct hit_record
 
     bool front_face;
 
-    inline void set_face_normal(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, const glm::dvec3& outward_normal)
+    inline void set_face_normal(const ray& r, const glm::dvec3& outward_normal)
     {
-        front_face = glm::dot(ray_dir, outward_normal) < 0;
+        front_face = glm::dot(r.direction, outward_normal) < 0;
         normal = front_face ? outward_normal : -outward_normal;
     }
 
@@ -55,7 +56,8 @@ struct hit_record
 
 // -----------------
 
-class material  {
+class material  
+{
     public:
         virtual bool scatter(
             const ray& r_in, const hit_record& rec, glm::dvec3& attenuation, ray& scattered
@@ -64,7 +66,8 @@ class material  {
 
 // -----------------
 
-class dielectric : public material {
+class dielectric : public material 
+{
     public:
         dielectric(double ri) : ref_idx(ri) {}
 
@@ -78,7 +81,8 @@ class dielectric : public material {
             glm::dvec3 unit_direction = glm::normalize(r_in.direction);
             double cos_theta = fmin(glm::dot(-unit_direction, rec.normal), 1.0);
             double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
-            if (etai_over_etat * sin_theta > 1.0 ) {
+            if (etai_over_etat * sin_theta > 1.0 ) 
+            {
                 glm::dvec3 reflected = reflect(unit_direction, rec.normal);
                 scattered = ray(rec.point, reflected);
                 return true;
@@ -107,7 +111,8 @@ class dielectric : public material {
 };
 
 
-class lambertian : public material {
+class lambertian : public material 
+{
     public:
         lambertian(const glm::dvec3& a) : albedo(a) {}
 
@@ -137,7 +142,8 @@ class lambertian : public material {
 };
 
 
-class metal : public material {
+class metal : public material 
+{
     public:
         metal(const glm::dvec3& a, double f) : albedo(a), fuzz(f < 1 ? f : 1) {}
 
@@ -173,7 +179,8 @@ class metal : public material {
 
 // -----------------
 
-class camera {
+class camera
+{
     public:
         camera() : camera(glm::dvec3(0,0,-1), glm::dvec3(0,0,0), glm::dvec3(0,1,0), 40, 1, 0, 10) {}
 
@@ -187,7 +194,8 @@ class camera {
             double focus_dist,
             double t0 = 0,
             double t1 = 0
-        ) {
+        ) 
+        {
             auto theta = degrees_to_radians(vfov);
             auto h = tan(theta/2);
             auto viewport_height = 2.0 * h;
@@ -207,7 +215,8 @@ class camera {
             time1 = t1;
         }
 
-        ray get_ray(double s, double t) const {
+        ray get_ray(double s, double t) const 
+        {
             long unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
 
             std::default_random_engine engine{seed};
@@ -245,7 +254,7 @@ class camera {
 class hittable
 {
 public:
-    virtual bool hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_min, double t_max, hit_record& rec) const = 0;
+    virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const = 0;
 };
 
 // -----------------
@@ -256,7 +265,7 @@ public:
     sphere(){};
     sphere(glm::dvec3 center, double rad, shared_ptr<material> m) : center_point(center), radius(rad), mat_ptr(m) {};
 
-    virtual bool hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_min, double t_max, hit_record& rec) const;
+    virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const;
 
 public:
     glm::dvec3 center_point;
@@ -275,7 +284,7 @@ public:
     void clear(){objects.clear();}
     void add(std::shared_ptr<hittable> object){objects.push_back(object);}
 
-    virtual bool hit(const glm::dvec3& ray_org, const glm::dvec3& ray_dir, double t_min, double t_max, hit_record& rec) const;
+    virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const;
 
 public:
     std::vector<std::shared_ptr<hittable>> objects;
@@ -305,7 +314,6 @@ private:
 
     std::vector<std::vector<std::vector<glm::dvec3>>> model; // reference with model[x][y][sample]
 
-    hittable_list world;
 
     int num_samples;
     int sample_count;
@@ -320,8 +328,10 @@ private:
 	bool pquit;
     bool send_tex = false;		
 
-
-
+    // rtiow objects
+    
+    hittable_list world;
+    camera cam;
 };
 
 #endif
