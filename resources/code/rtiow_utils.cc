@@ -346,7 +346,7 @@ static void HelpMarker(const char* desc)
 
 
 
-void rtiow::one_thread_sample(int index)
+void rtiow::one_thread_sample(int index, int count)
 {
     long unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
 
@@ -360,7 +360,7 @@ void rtiow::one_thread_sample(int index)
         {
             int x_coord = &x - &model[0];
             int y_coord = &y - &x[0];
-            if(x_coord % 16 == index)
+            if(x_coord % count == index)
             {
                 double x_fl = (static_cast<double>(x_coord) + distribution(engine))/(static_cast<double>(WIDTH-1)); 
                 double y_fl = (static_cast<double>(y_coord) + distribution(engine))/(static_cast<double>(HEIGHT-1)); 
@@ -391,24 +391,25 @@ void rtiow::do_a_sample()
     // start a timer
     auto start = std::chrono::high_resolution_clock::now();
    
+    int num_threads = 16;
 
     // launch all the threads
-    std::thread t0(&rtiow::one_thread_sample, this, 0);
-    std::thread t1(&rtiow::one_thread_sample, this, 1);
-    std::thread t2(&rtiow::one_thread_sample, this, 2);
-    std::thread t3(&rtiow::one_thread_sample, this, 3);
-    std::thread t4(&rtiow::one_thread_sample, this, 4);
-    std::thread t5(&rtiow::one_thread_sample, this, 5);
-    std::thread t6(&rtiow::one_thread_sample, this, 6);
-    std::thread t7(&rtiow::one_thread_sample, this, 7);
-    std::thread t8(&rtiow::one_thread_sample, this, 8);
-    std::thread t9(&rtiow::one_thread_sample, this, 9);
-    std::thread t10(&rtiow::one_thread_sample, this, 10);
-    std::thread t11(&rtiow::one_thread_sample, this, 11);
-    std::thread t12(&rtiow::one_thread_sample, this, 12);
-    std::thread t13(&rtiow::one_thread_sample, this, 13);
-    std::thread t14(&rtiow::one_thread_sample, this, 14);
-    std::thread t15(&rtiow::one_thread_sample, this, 15);
+    std::thread t0(&rtiow::one_thread_sample, this, 0, num_threads);
+    std::thread t1(&rtiow::one_thread_sample, this, 1, num_threads);
+    std::thread t2(&rtiow::one_thread_sample, this, 2, num_threads);
+    std::thread t3(&rtiow::one_thread_sample, this, 3, num_threads);
+    std::thread t4(&rtiow::one_thread_sample, this, 4, num_threads);
+    std::thread t5(&rtiow::one_thread_sample, this, 5, num_threads);
+    std::thread t6(&rtiow::one_thread_sample, this, 6, num_threads);
+    std::thread t7(&rtiow::one_thread_sample, this, 7, num_threads);
+    std::thread t8(&rtiow::one_thread_sample, this, 8, num_threads);
+    std::thread t9(&rtiow::one_thread_sample, this, 9, num_threads);
+    std::thread t10(&rtiow::one_thread_sample, this, 10, num_threads);
+    std::thread t11(&rtiow::one_thread_sample, this, 11, num_threads);
+    std::thread t12(&rtiow::one_thread_sample, this, 12, num_threads);
+    std::thread t13(&rtiow::one_thread_sample, this, 13, num_threads);
+    std::thread t14(&rtiow::one_thread_sample, this, 14, num_threads);
+    std::thread t15(&rtiow::one_thread_sample, this, 15, num_threads);
 
 
     // join all the threads

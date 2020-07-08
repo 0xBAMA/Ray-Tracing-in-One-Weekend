@@ -317,7 +317,7 @@ private:
 	void gl_setup();
 	void do_a_sample();
 
-    void one_thread_sample(int index);
+    void one_thread_sample(int index, int count);
 
 	void quit();
 	
