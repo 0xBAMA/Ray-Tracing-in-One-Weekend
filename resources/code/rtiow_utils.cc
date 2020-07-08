@@ -163,8 +163,9 @@ void rtiow::create_window()
     const int image_width = WIDTH;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
 
-    glm::dvec3 lookfrom(13,2,3);
-    glm::dvec3 lookat(0,0,0);
+    glm::dvec3 lookfrom(13,5,3);
+    /* glm::dvec3 lookat(0,0,0); */
+    glm::dvec3 lookat(0.25,0,0.25);
     glm::dvec3 vup(0,1,0);
     auto dist_to_focus = 10.0;
     auto aperture = 0.1;
@@ -177,61 +178,75 @@ void rtiow::create_window()
     world = hittable_list();
 
     // add stuff to it
-    auto ground_material = make_shared<lambertian>(glm::dvec3(0.6,0.4,0.2));
+    auto ground_material = make_shared<lambertian>(glm::dvec3(0.4,0.3,0.2));
     world.add(make_shared<sphere>(glm::dvec3(0,-1000,0), 1000, ground_material));
 
-    long unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
+    /* long unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count(); */
 
-    std::default_random_engine engine{seed};
-    std::uniform_real_distribution<double> distribution{0, 1};
-    std::uniform_real_distribution<double> distribution2{0.5, 1};
-    std::uniform_real_distribution<double> distribution3{0, 0.5};
+    /* std::default_random_engine engine{seed}; */
+    /* std::uniform_real_distribution<double> distribution{0, 1}; */
+    /* std::uniform_real_distribution<double> distribution2{0.5, 1}; */
+    /* std::uniform_real_distribution<double> distribution3{0, 0.5}; */
 
-    for (int a = -11; a < 11; a++) 
+    /* for (int a = -11; a < 11; a++) */ 
+    /* { */
+    /*     for (int b = -11; b < 11; b++) */ 
+    /*     { */
+    /*         auto choose_mat = distribution(engine); */
+    /*         glm::dvec3 center(a + 0.9*distribution(engine), 0.2, b + 0.9*distribution(engine)); */
+
+    /*         if (glm::length(center - glm::dvec3(4, 0.2, 0)) > 0.9) */ 
+    /*         { */
+    /*             shared_ptr<material> sphere_material; */
+
+    /*             if (choose_mat < 0.8) */ 
+    /*             { */
+    /*                 // diffuse */
+    /*                 auto albedo = glm::dvec3(distribution(engine), distribution(engine), distribution(engine)); */
+    /*                 sphere_material = make_shared<lambertian>(albedo); */
+    /*                 world.add(make_shared<sphere>(center, 0.2, sphere_material)); */
+    /*             } */ 
+    /*             else if (choose_mat < 0.95) */ 
+    /*             { */
+    /*                 // metal */
+    /*                 auto albedo = glm::dvec3(distribution2(engine), distribution2(engine), distribution2(engine)); */
+    /*                 auto fuzz = distribution3(engine); */
+    /*                 sphere_material = make_shared<metal>(albedo, fuzz); */
+    /*                 world.add(make_shared<sphere>(center, 0.2, sphere_material)); */
+    /*             } */ 
+    /*             else */ 
+    /*             { */
+    /*                 // glass */
+    /*                 sphere_material = make_shared<dielectric>(1.5); */
+    /*                 world.add(make_shared<sphere>(center, 0.2, sphere_material)); */
+    /*             } */
+    /*         } */
+    /*     } */
+    /* } */
+
+    /* auto material1 = make_shared<dielectric>(1.5); */
+    /* world.add(make_shared<sphere>(glm::dvec3(0, 1, 0), 1.0, material1)); */
+
+    /* auto material2 = make_shared<lambertian>(glm::dvec3(0.4, 0.2, 0.1)); */
+    /* world.add(make_shared<sphere>(glm::dvec3(-4, 1, 0), 1.0, material2)); */
+
+    /* auto material3 = make_shared<metal>(glm::dvec3(0.7, 0.6, 0.5), 0.0); */
+    /* world.add(make_shared<sphere>(glm::dvec3(4, 1, 0), 1.0, material3)); */ 
+
+
+    // materials test
+   
+    for(float x = -1.0; x < 5; x+=1.0)
     {
-        for (int b = -11; b < 11; b++) 
+        for(float z = -2.0; z < 5; z+=1.0)
         {
-            auto choose_mat = distribution(engine);
-            glm::dvec3 center(a + 0.9*distribution(engine), 0.2, b + 0.9*distribution(engine));
-
-            if (glm::length(center - glm::dvec3(4, 0.2, 0)) > 0.9) 
-            {
-                shared_ptr<material> sphere_material;
-
-                if (choose_mat < 0.8) 
-                {
-                    // diffuse
-                    auto albedo = glm::dvec3(distribution(engine), distribution(engine), distribution(engine));
-                    sphere_material = make_shared<lambertian>(albedo);
-                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
-                } 
-                else if (choose_mat < 0.95) 
-                {
-                    // metal
-                    auto albedo = glm::dvec3(distribution2(engine), distribution2(engine), distribution2(engine));
-                    auto fuzz = distribution3(engine);
-                    sphere_material = make_shared<metal>(albedo, fuzz);
-                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
-                } 
-                else 
-                {
-                    // glass
-                    sphere_material = make_shared<dielectric>(1.5);
-                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
-                }
-            }
+            auto material = make_shared<metal>(glm::dvec3(0.7+0.05*x, 0.6, 0.5+0.1*z), (z+1.0)/8.0);
+            world.add(make_shared<sphere>(glm::dvec3(x, 0.75, z), 0.3, material));
+            
+            auto material2 = make_shared<dielectric>(1.05 + (z+2)/5.0);
+            world.add(make_shared<sphere>(glm::dvec3(x-0.15, 0.5, z-0.5), 0.25, material2));
         }
     }
-
-    auto material1 = make_shared<dielectric>(1.5);
-    world.add(make_shared<sphere>(glm::dvec3(0, 1, 0), 1.0, material1));
-
-    auto material2 = make_shared<lambertian>(glm::dvec3(0.4, 0.2, 0.1));
-    world.add(make_shared<sphere>(glm::dvec3(-4, 1, 0), 1.0, material2));
-
-    auto material3 = make_shared<metal>(glm::dvec3(0.7, 0.6, 0.5), 0.0);
-    world.add(make_shared<sphere>(glm::dvec3(4, 1, 0), 1.0, material3)); 
-
 }
 
 void rtiow::gl_setup() 
@@ -329,6 +344,40 @@ static void HelpMarker(const char* desc)
 	}
 }
 
+
+
+void rtiow::one_thread_sample(int index)
+{
+    long unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+    std::default_random_engine engine{seed};
+    std::uniform_real_distribution<double> distribution{0, 1};
+
+    // do a sample for all the pixels - this takes time
+    for(auto & x : model)
+    {
+        for(auto & y : x)
+        {
+            int x_coord = &x - &model[0];
+            int y_coord = &y - &x[0];
+            if(x_coord % 16 == index)
+            {
+                double x_fl = (static_cast<double>(x_coord) + distribution(engine))/(static_cast<double>(WIDTH-1)); 
+                double y_fl = (static_cast<double>(y_coord) + distribution(engine))/(static_cast<double>(HEIGHT-1)); 
+
+                ray r = cam.get_ray(x_fl, y_fl);
+
+                // figure out the color, put it in 'sample'
+                glm::dvec3 sample = ray_color(r, world, max_depth);
+            
+                // push it onto the vector of samples for this pixel
+                y.push_back(sample);
+            }
+        }
+    }
+}
+
+
 void rtiow::do_a_sample()
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io; // void cast prevents unused variable warning
@@ -342,34 +391,45 @@ void rtiow::do_a_sample()
     // start a timer
     auto start = std::chrono::high_resolution_clock::now();
    
-    long unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
 
-    std::default_random_engine engine{seed};
-    std::uniform_real_distribution<double> distribution{0, 1};
+    // launch all the threads
+    std::thread t0(&rtiow::one_thread_sample, this, 0);
+    std::thread t1(&rtiow::one_thread_sample, this, 1);
+    std::thread t2(&rtiow::one_thread_sample, this, 2);
+    std::thread t3(&rtiow::one_thread_sample, this, 3);
+    std::thread t4(&rtiow::one_thread_sample, this, 4);
+    std::thread t5(&rtiow::one_thread_sample, this, 5);
+    std::thread t6(&rtiow::one_thread_sample, this, 6);
+    std::thread t7(&rtiow::one_thread_sample, this, 7);
+    std::thread t8(&rtiow::one_thread_sample, this, 8);
+    std::thread t9(&rtiow::one_thread_sample, this, 9);
+    std::thread t10(&rtiow::one_thread_sample, this, 10);
+    std::thread t11(&rtiow::one_thread_sample, this, 11);
+    std::thread t12(&rtiow::one_thread_sample, this, 12);
+    std::thread t13(&rtiow::one_thread_sample, this, 13);
+    std::thread t14(&rtiow::one_thread_sample, this, 14);
+    std::thread t15(&rtiow::one_thread_sample, this, 15);
 
-    // do a sample for all the pixels - this takes time
-    for(auto & x : model)
-    {
-        for(auto & y : x)
-        {
-            int x_coord = &x - &model[0];
-            int y_coord = &y - &x[0];
-            
-            double x_fl = (static_cast<double>(x_coord) + distribution(engine))/(static_cast<double>(WIDTH-1)); 
-            double y_fl = (static_cast<double>(y_coord) + distribution(engine))/(static_cast<double>(HEIGHT-1)); 
 
-            /* cout << endl << endl << " x " << x_coord << " y " << y_coord << " is xfl " << x_fl << " yfl " << y_fl << endl; */ 
+    // join all the threads
+    t0.join();
+    t1.join();
+    t2.join();
+    t3.join();
+    t4.join();
+    t5.join();
+    t6.join();
+    t7.join(); 
+    t8.join();
+    t9.join();
+    t10.join();
+    t11.join();
+    t12.join();
+    t13.join();
+    t14.join();
+    t15.join(); 
 
-            ray r = cam.get_ray(x_fl, y_fl);
 
-            // test the ray against the spheres
-            // figure out the color, put it in 'sample'
-            glm::dvec3 sample = ray_color(r, world, max_depth);
-            
-            // push it onto the vector of samples for this pixel
-            y.push_back(sample);
-        }
-    }
 
     // increment the sample count
     sample_count++;
@@ -538,7 +598,7 @@ void rtiow::quit()
     height = HEIGHT;
 
     tex_data.resize(4*WIDTH*HEIGHT);
-    std::string filename = std::string("save.png");
+    std::string filename = std::string("save3.png");
 
     unsigned error = lodepng::encode(filename.c_str(), tex_data, width, height);
 
